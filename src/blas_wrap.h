@@ -1,5 +1,4 @@
-#ifndef BLAS_WRAPPER_HH
-#define BLAS_WRAPPER_HH
+#pragma once
 
 #include <assert.h>
 #include <iostream>
@@ -22,7 +21,7 @@ bool almost_equal(double a, double b) {
 
 /*
 	Type to be used with BLAS wrappers.
-	This also hides C-style memory management.
+	This also hides underlying memory management.
 */
 class Matrix
 {
@@ -145,13 +144,11 @@ void matrix_multiply(Matrix& A, Matrix& B, Matrix& C, double alpha, double beta)
 		A.second_dim(),             // middle dimension
 		alpha,                      // alpha multiplier
 		A.raw(),                    // A data
-		A.n,                        // lda >= left_dim
+		A.n,                        // lda
 		B.raw(),                    // B data
-		B.n,                        // ldb >= right_dim
+		B.n,                        // ldb
 		beta,                       // beta multiplier
 		C.raw(),                    // C data
-		C.n                         // ldc >= right_dim
+		C.n                         // ldc
 	);
 }
-
-#endif
