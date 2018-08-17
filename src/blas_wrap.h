@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <iostream>
 #include <cmath>
+#include <cstring>
 
 #ifdef __APPLE__
 	#include <Accelerate/Accelerate.h>
@@ -16,7 +17,7 @@ const double EPS = 1e-14;
 	Numerical comparison.
 */
 bool almost_equal(double a, double b) {
-	return abs( a - b ) < EPS;
+	return std::abs( a - b ) < EPS;
 }
 
 /*
