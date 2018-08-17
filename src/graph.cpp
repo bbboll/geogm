@@ -2,6 +2,8 @@
 #include <fstream>
 #include <iostream>
 #include <assert.h>
+#include <vector>
+#include <utility>
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
@@ -93,19 +95,33 @@ void Graph::load_from_file(std::string path) {
 		}
 	}
 
+	// reserve space for edge assigment
+	edge_endpoints.reserve(edge_count);
+
 	// read edge assignment
 	for (int i = 0; i < edge_count; ++i)
 	{
 		if (!std::getline(instream, line)) {
 			std::cout << "Illegal file format. Expected node-node assignment but found EOF." << std::endl;
 		}
-		// assert valid prefix
-		std::string prefix("2 ");
-		auto mismatch_index = std::mismatch(prefix.begin(), prefix.end(), line.begin());
-		assert( mismatch_index.first == prefix.end() );
 
-		// TODO -----------------------------------------------------------------------
+		std::vector<int> _pair;
+
+		// read ints in line
+		boost::regex_token_iterator<std::string::iterator> it{line.begin(), line.end(), all_ints, 1};
+		boost::regex_token_iterator<std::string::iterator> end;
+		while (it != end) {
+			_pair.push_back(std::stoi(*it++));
+		}
+		
+		// assert valid prefix
+		assert( _pair.at(0) == 2 );
+		assert( _pair.size() == 3 );
+
+		edge_endpoints.push_back(std::pair<int,int>(_pair.at(1), _pair.at(2)));
 	}
+
+	assert( edge_endpoints.size() == edge_count );
 
 	// allocate memory for unary costs
 	unary_costs = (double*) malloc( stride*node_count * sizeof(double) );

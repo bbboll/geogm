@@ -1,12 +1,14 @@
 #pragma once
 
 #include <vector>
+#include <utility>
 #include <string>
 
 class Graph
 {
 	double *unary_costs = NULL;
 	double *pairwise_costs = NULL;
+	std::vector< std::pair<int, int> > edge_endpoints;
 
 public:
 
