@@ -86,6 +86,23 @@ int main( int argc, char **argv )
 		free(data);
 	}
 
+	// test case 4: matrix copy
+	{
+		int m = 11;
+		int n = 14;
+		Matrix a(m,n);
+		Matrix b(m,n);
+		a.one_fill();
+		matrix_copy(a, b);
+		for (int i = 0; i < m; ++i)
+		{
+			for (int j = 0; j < n; ++j)
+			{
+				assert( b.get(i, j) == 1.0 );
+			}
+		}
+	}
+
 	std::cout << "All tests passed." << std::endl;
 
 	return 0;

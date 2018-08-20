@@ -126,6 +126,23 @@ public:
 };
 
 /*
+	BLAS routine copy
+	B ← A
+*/
+void matrix_copy(Matrix& A, Matrix& B) {
+	assert( A.m == B.m );
+	assert( A.n == B.n );
+
+	cblas_dcopy(
+		A.m*A.n,	// number of entries
+		A.raw(),	// source data
+		1,			// source stride
+		B.raw(),	// destination data
+		1			// destination stride
+	);
+}
+
+/*
 	BLAS routine dgemm
 	C ← αAB + βC
 */
