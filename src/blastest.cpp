@@ -177,6 +177,25 @@ int main( int argc, char **argv )
 		assert(almost_equal( y.get(1,0), 5.0  ));
 	}
 
+	// test case 8: inplace addition
+	{
+		Matrix a(3,2);
+		a.set(0,0, -3.0);
+		a.set(1,0, 1.0);
+		a.set(2,0, 1.0);
+		a.set(0,1, 1.0);
+		a.set(1,1, -1.0);
+		a.set(2,1, 4.0);
+
+		a += -1.0;
+		assert(almost_equal( a.get(0,0), -4.0 ));
+		assert(almost_equal( a.get(1,0), 0.0 ));
+		assert(almost_equal( a.get(2,0), 0.0 ));
+		assert(almost_equal( a.get(0,1), 0.0 ));
+		assert(almost_equal( a.get(1,1), -2.0 ));
+		assert(almost_equal( a.get(2,1), 3.0 ));
+	}
+
 	std::cout << "All tests passed." << std::endl;
 
 	return 0;

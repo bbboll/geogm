@@ -5,20 +5,12 @@
 #include <cmath>
 #include <cstring>
 
-#ifdef __APPLE__
-	#include <Accelerate/Accelerate.h>
-#else
-	#include <cblas.h>
-#endif
-
 const double EPS = 1e-14;
 
 /*
 	Numerical comparison.
 */
-bool almost_equal(double a, double b) {
-	return std::abs( a - b ) < EPS;
-}
+bool almost_equal(double a, double b);
 
 /*
 	Type to be used with BLAS wrappers.
@@ -26,15 +18,19 @@ bool almost_equal(double a, double b) {
 */
 class Matrix
 {
-	double *A;
+	double *A = NULL;
 	bool needs_memory_cleanup = true;
 
 public:
 	// matrix dimensions
-	const int m, n;
+	int m, n;
 
 	// transposed?
 	bool trans = false;
+
+	Matrix() : m(0), n(0) {
+		needs_memory_cleanup = false;
+	};
 
 	Matrix(const int _m, const int _n) : m(_m), n(_n) {
 		// allocate memory for entries
@@ -48,12 +44,24 @@ public:
 	};
 
 	~Matrix() {
-		if (needs_memory_cleanup) {
+		if (needs_memory_cleanup && A != NULL) {
 			free(A);
 		}
 	};
 
-	double *raw() {
+	void set_data(double* data) {
+		assert( A == NULL );
+		A = data;
+	};
+
+	void set_size(const int _m, const int _n) {
+		assert( m == 0 );
+		assert( n == 0 );
+		m = _m;
+		n = _n;
+	};
+
+	double* raw() const {
 		return A;
 	};
 
@@ -112,6 +120,22 @@ public:
 		}
 	};
 
+	Matrix& operator*=(const double alpha) {
+		for (int i = 0; i < m*n; ++i)
+		{
+			A[i] *= alpha;
+		}
+		return *this;
+	};
+
+	Matrix& operator+=(const double alpha) {
+		for (int i = 0; i < m*n; ++i)
+		{
+			A[i] += alpha;
+		}
+		return *this;
+	};
+
 	void print() const {
 		std::cout << "Matrix " << first_dim() << "x" << second_dim() << std::endl;
 		for (int i = 0; i < first_dim(); ++i)
@@ -123,106 +147,59 @@ public:
 			std::cout << std::endl;
 		}
 	};
+
+	double sum() const {
+		double sum = 0.0;
+		for (int i = 0; i < m*n; ++i)
+		{
+			sum += A[i];
+		}
+		return sum;
+	};
 };
 
 /*
 	pointwise subdivide by operand
 	B ← A / B
 */
-void matrix_psubdivide(Matrix &A, Matrix&B) {
-	assert( A.m == B.m );
-	assert( A.n == B.n );
+void matrix_psubdivide(const Matrix& A, Matrix& B);
 
-	double *dataA = A.raw();
-	double *dataB = B.raw();
-	for (int i = 0; i < A.m*A.n; ++i)
-	{
-		dataB[i] = dataA[i] / dataB[i];
-	}
-}
+/*
+	pointwise exponential
+	B ← exp(B)
+*/
+void matrix_pexp(Matrix &A);
+
+/*
+	pointwise natural logarithm
+	B ← log(B)
+*/
+void matrix_plog(Matrix &A);
+
+/*
+	Mean squared error
+*/
+double matrix_mse(Matrix &A, Matrix &B);
 
 /*
 	BLAS routine copy
 	B ← A
 */
-void matrix_copy(Matrix& A, Matrix& B) {
-	assert( A.m == B.m );
-	assert( A.n == B.n );
-
-	cblas_dcopy(
-		A.m*A.n,	// number of entries
-		A.raw(),	// source data
-		1,			// source stride
-		B.raw(),	// destination data
-		1			// destination stride
-	);
-}
+void matrix_copy(const Matrix& A, Matrix& B);
 
 /*
 	BLAS routine dgemv
 	y ← αAx + βy
 */
-void matrix_vector_multiply(Matrix &A, Matrix &x, Matrix& y, double alpha, double beta) {
-	auto transA = CBLAS_TRANSPOSE::CblasNoTrans;
-	if (A.trans) {
-		transA = CBLAS_TRANSPOSE::CblasTrans;
-	}
-
-	assert( A.second_dim() == x.m );
-	assert( A.first_dim() == y.m );
-	assert( x.n == 1 );
-	assert( y.n == 1 );
-
-	cblas_dgemv(
-		CBLAS_ORDER::CblasRowMajor, // memory layout
-		transA,                     // transpose A
-		A.m,                        // left   dimension
-		A.n,                        // right  dimension
-		alpha,                      // alpha multiplier
-		A.raw(),                    // A data
-		A.n,                        // lda
-		x.raw(),                    // x data
-		1,                          // x stride
-		beta,                       // beta multiplier
-		y.raw(),                    // y data
-		1                           // y stride
-	);
-}
+void matrix_vector_multiply(const Matrix &A, const Matrix &x, Matrix& y, double alpha, double beta);
 
 /*
 	BLAS routine dgemm
 	C ← αAB + βC
 */
-void matrix_multiply(Matrix& A, Matrix& B, Matrix& C, double alpha, double beta) {
+void matrix_multiply(const Matrix& A, const Matrix& B, Matrix& C, double alpha, double beta);
 
-	auto transA = CBLAS_TRANSPOSE::CblasNoTrans;
-	if (A.trans) {
-		transA = CBLAS_TRANSPOSE::CblasTrans;
-	}
-	auto transB = CBLAS_TRANSPOSE::CblasNoTrans;
-	if (B.trans) {
-		transB = CBLAS_TRANSPOSE::CblasTrans;
-	}
-
-	assert( A.second_dim() == B.first_dim() );
-	assert( A.first_dim()  == C.m );
-	assert( B.second_dim() == C.n );
-
-	// DGEMM routine from accelerate framework or openBLAS (cblas interface)
-	cblas_dgemm(
-		CBLAS_ORDER::CblasRowMajor, // memory layout
-		transA,                     // transpose A
-		transB,                     // transpose B
-		C.m,                        // left   dimension
-		C.n,                        // right  dimension
-		A.second_dim(),             // middle dimension
-		alpha,                      // alpha multiplier
-		A.raw(),                    // A data
-		A.n,                        // lda
-		B.raw(),                    // B data
-		B.n,                        // ldb
-		beta,                       // beta multiplier
-		C.raw(),                    // C data
-		C.n                         // ldc
-	);
-}
+/*
+	BLAS routine ddot
+*/
+double dot_product(const Matrix& A, const Matrix& B);

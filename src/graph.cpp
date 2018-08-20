@@ -1,4 +1,5 @@
 #include "graph.h"
+#include "blas_wrap.h"
 #include <fstream>
 #include <iostream>
 #include <assert.h>
@@ -95,6 +96,13 @@ void Graph::load_from_file(std::string path) {
 		}
 	}
 
+	// setup adjacency
+	adjacency.reserve(node_count);
+	for (int i = 0; i < node_count; ++i)
+	{
+		adjacency.push_back(intvecpair(std::vector<int>(),std::vector<int>()));
+	}
+
 	// reserve space for edge assigment
 	edge_endpoints.reserve(edge_count);
 
@@ -119,6 +127,10 @@ void Graph::load_from_file(std::string path) {
 		assert( _pair.size() == 3 );
 
 		edge_endpoints.push_back(std::pair<int,int>(_pair.at(1), _pair.at(2)));
+
+		// add to adjacency
+		adjacency.at(_pair.at(1)).second.push_back(edge_endpoints.size());
+		adjacency.at(_pair.at(2)).first.push_back(edge_endpoints.size());
 	}
 
 	assert( edge_endpoints.size() == edge_count );
@@ -194,4 +206,55 @@ void Graph::load_from_file(std::string path) {
 	assert( pairwise_cost_index == stride*stride*edge_count );
 	
 	file.close();
+
+	// setup cost and label matrices
+	unary_costs_m.set_data(unary_costs);
+	unary_costs_m.set_size(node_count*stride, 1);
+	pairwise_costs_m.set_data(pairwise_costs);
+	pairwise_costs_m.set_size(edge_count*stride*stride, 1);
+	unary_labels = (double*) malloc( node_count*stride * sizeof(double) );
+	pairwise_labels = (double*) malloc( edge_count*stride*stride * sizeof(double) );
+	unary_labels_m.set_data(unary_labels);
+	unary_labels_m.set_size(node_count*stride, 1);
+	pairwise_labels_m.set_data(pairwise_labels);
+	pairwise_labels_m.set_size(edge_count*stride*stride, 1);
+
+	// init label vectors
+	unary_labels_m.one_fill();
+	pairwise_labels_m.one_fill();
+	unary_labels_m *= 1/stride;
+	pairwise_labels_m *= 1/stride;
 }
+
+const Matrix Graph::get_unary(const int i) const {
+	return Matrix(stride, 1, &unary_costs[ i*stride ]);
+}
+
+const Matrix Graph::get_pairwise(const int ij) const {
+	return Matrix(stride, stride, &pairwise_costs[ ij*stride*stride ]);
+}
+
+const intvecpair Graph::adjacent_edges(const int i) const {
+	return adjacency.at(i);
+}
+
+const double Graph::energy() const {
+	return dot_product(unary_costs_m, unary_labels_m) + dot_product(pairwise_costs_m, pairwise_labels_m);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
