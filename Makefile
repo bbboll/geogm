@@ -7,11 +7,20 @@ STD=c++1z
 
 ifeq ($(UNAME_S),Linux)
 blastest: src/blastest.cpp src/blas_wrap.h src/blas_wrap.cpp
-		$(CXX) -I$(BLAS_DIR)/include \
-			   -lopenblas \
-			   -lc \
-			   -std=$(STD) \
-			   -o blastest src/blas_wrap.cpp src/blastest.cpp
+	$(CXX) -I$(BLAS_DIR)/include \
+		   -lopenblas \
+		   -lc \
+		   -std=$(STD) \
+		   -o blastest src/blas_wrap.cpp src/blastest.cpp
+
+optimize: src/optimize.cpp src/graph.cpp src/blas_wrap.h src/blas_wrap.cpp
+	$(CXX) -I$(BLAS_DIR)/include \
+		   -lopenblas \
+		   -lc \
+		   -std=$(STD) \
+		   -lboost_iostreams \
+		   -lboost_regex \
+		   -o optimize src/blas_wrap.cpp src/graph.cpp src/optimize.cpp
 endif
 ifeq ($(UNAME_S),Darwin)
 blastest: src/blastest.cpp src/blas_wrap.h src/blas_wrap.cpp
