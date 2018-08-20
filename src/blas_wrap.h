@@ -27,6 +27,7 @@ bool almost_equal(double a, double b) {
 class Matrix
 {
 	double *A;
+	bool needs_memory_cleanup = true;
 
 public:
 	// matrix dimensions
@@ -40,8 +41,16 @@ public:
 		A = (double*) malloc( m*n * sizeof(double) );
 	};
 
-	~Matrix() { 
-		free(A);
+	Matrix(const int _m, const int _n, double *_A) : m(_m), n(_n) {
+		// use externally managed memory location for A
+		A = _A;
+		needs_memory_cleanup = false;
+	};
+
+	~Matrix() {
+		if (needs_memory_cleanup) {
+			free(A);
+		}
 	};
 
 	double *raw() {
@@ -135,7 +144,7 @@ void matrix_multiply(Matrix& A, Matrix& B, Matrix& C, double alpha, double beta)
 	assert( A.first_dim()  == C.m );
 	assert( B.second_dim() == C.n );
 
-	// DGEMM routine from accelerate framework (cblas interface)
+	// DGEMM routine from accelerate framework or openBLAS (cblas interface)
 	cblas_dgemm(
 		CBLAS_ORDER::CblasRowMajor, // memory layout
 		transA,                     // transpose A

@@ -72,6 +72,20 @@ int main( int argc, char **argv )
 		}
 	}
 
+	// test case 3: external memory management
+	{
+		int m = 10;
+		int n = 30;
+		double *data = (double*) malloc( m*n * sizeof(double) );
+		Matrix a(m,n,data);
+		a.one_fill();
+		for (int i = 0; i < m*n; ++i)
+		{
+			assert( data[i] == 1.0 );
+		}
+		free(data);
+	}
+
 	std::cout << "All tests passed." << std::endl;
 
 	return 0;
