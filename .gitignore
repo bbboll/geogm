@@ -31,3 +31,5 @@
 *.out
 *.app
 blastest
+read_gz
+optimize
