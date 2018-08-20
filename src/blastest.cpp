@@ -103,6 +103,34 @@ int main( int argc, char **argv )
 		}
 	}
 
+	// test case 5: pointwise subdivide
+	{
+		Matrix a(2, 3);
+		Matrix b(2, 3);
+
+		a.set(0,0, -3.0);
+		a.set(0,1, 1.0);
+		a.set(0,2, 1.0);
+		a.set(1,0, 1.0);
+		a.set(1,1, -1.0);
+		a.set(1,2, 4.0);
+
+		b.set(0,0, 2.0);
+		b.set(0,1, 1.0);
+		b.set(0,2, 1.0);
+		b.set(1,0, -1.1);
+		b.set(1,1, -1.0);
+		b.set(1,2, 3.0);
+
+		matrix_psubdivide(a, b);
+		assert(almost_equal( b.get(0,0), -1.5                ));
+		assert(almost_equal( b.get(0,1), 1.0                 ));
+		assert(almost_equal( b.get(0,2), 1.0                 ));
+		assert(almost_equal( b.get(1,0), -0.909090909090909  ));
+		assert(almost_equal( b.get(1,1), 1.0                 ));
+		assert(almost_equal( b.get(1,2), 1.333333333333333   ));
+	}
+
 	std::cout << "All tests passed." << std::endl;
 
 	return 0;

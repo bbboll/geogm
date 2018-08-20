@@ -126,6 +126,22 @@ public:
 };
 
 /*
+	pointwise subdivide by operand
+	B ← A / B
+*/
+void matrix_psubdivide(Matrix &A, Matrix&B) {
+	assert( A.m == B.m );
+	assert( A.n == B.n );
+
+	double *dataA = A.raw();
+	double *dataB = B.raw();
+	for (int i = 0; i < A.m*A.n; ++i)
+	{
+		dataB[i] = dataA[i] / dataB[i];
+	}
+}
+
+/*
 	BLAS routine copy
 	B ← A
 */
