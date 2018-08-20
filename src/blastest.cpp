@@ -131,6 +131,52 @@ int main( int argc, char **argv )
 		assert(almost_equal( b.get(1,2), 1.333333333333333   ));
 	}
 
+	// test case 6: matrix-vector multiplication
+	{
+		Matrix a(2, 3);
+		Matrix x(3, 1);
+		Matrix y(2, 1);
+
+		a.set(0,0, -3.0);
+		a.set(0,1, 1.0);
+		a.set(0,2, 1.0);
+		a.set(1,0, 1.0);
+		a.set(1,1, -1.0);
+		a.set(1,2, 4.0);
+
+		x.set(0, 0, 2.0);
+		x.set(1, 0, 1.0);
+		x.set(2, 0, 1.0);
+
+		matrix_vector_multiply(a, x, y, 1.0, 0.0);
+		assert(almost_equal( y.get(0,0), -4.0 ));
+		assert(almost_equal( y.get(1,0), 5.0  ));
+	}
+
+	// test case 7: matrix-vector multiplication transposed
+	{
+		Matrix a(3, 2);
+		Matrix x(3, 1);
+		Matrix y(2, 1);
+
+		a.set(0,0, -3.0);
+		a.set(1,0, 1.0);
+		a.set(2,0, 1.0);
+		a.set(0,1, 1.0);
+		a.set(1,1, -1.0);
+		a.set(2,1, 4.0);
+
+		a.transpose();
+
+		x.set(0, 0, 2.0);
+		x.set(1, 0, 1.0);
+		x.set(2, 0, 1.0);
+
+		matrix_vector_multiply(a, x, y, 1.0, 0.0);
+		assert(almost_equal( y.get(0,0), -4.0 ));
+		assert(almost_equal( y.get(1,0), 5.0  ));
+	}
+
 	std::cout << "All tests passed." << std::endl;
 
 	return 0;

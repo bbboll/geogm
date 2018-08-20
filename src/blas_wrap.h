@@ -159,6 +159,37 @@ void matrix_copy(Matrix& A, Matrix& B) {
 }
 
 /*
+	BLAS routine dgemv
+	y ← αAx + βy
+*/
+void matrix_vector_multiply(Matrix &A, Matrix &x, Matrix& y, double alpha, double beta) {
+	auto transA = CBLAS_TRANSPOSE::CblasNoTrans;
+	if (A.trans) {
+		transA = CBLAS_TRANSPOSE::CblasTrans;
+	}
+
+	assert( A.second_dim() == x.m );
+	assert( A.first_dim() == y.m );
+	assert( x.n == 1 );
+	assert( y.n == 1 );
+
+	cblas_dgemv(
+		CBLAS_ORDER::CblasRowMajor, // memory layout
+		transA,                     // transpose A
+		A.m,                        // left   dimension
+		A.n,                        // right  dimension
+		alpha,                      // alpha multiplier
+		A.raw(),                    // A data
+		A.n,                        // lda
+		x.raw(),                    // x data
+		1,                          // x stride
+		beta,                       // beta multiplier
+		y.raw(),                    // y data
+		1                           // y stride
+	);
+}
+
+/*
 	BLAS routine dgemm
 	C ← αAB + βC
 */
