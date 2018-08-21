@@ -33,3 +33,6 @@
 blastest
 read_gz
 optimize
+
+# Output
+*.ppm

@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <vector>
 #include <utility>
+#include <sstream>
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
@@ -248,6 +249,25 @@ const intvecpair Graph::adjacent_edges(const int i) const {
 
 const double Graph::energy() const {
 	return dot_product(unary_costs_m, unary_labels_m); // + dot_product(pairwise_costs_m, pairwise_labels_m);
+}
+
+void Graph::export_labeling(const int width, const int height) const {
+	std::ofstream outfile;
+	std::stringstream ss;
+	ss << "output_" << width << "_" << height << ".ppm";
+	outfile.open(ss.str());
+	
+	outfile << "P2\n# Created by GeoGM\n" << width << " " << height << " " << (stride - 1) << "\n";
+	for (int i = 0; i < height; ++i)
+	{
+		for (int j = 0; j < width; ++j)
+		{
+			Matrix labels = get_unary_labels( i*width + j );
+			outfile << labels.argmax() << " ";
+		}
+		outfile << "\n";
+	}
+	outfile.close();
 }
 
 

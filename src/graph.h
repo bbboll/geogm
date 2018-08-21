@@ -47,5 +47,6 @@ public:
 	// const Matrix get_pairwise_labels(const int ij) const;
 	const intvecpair adjacent_edges(const int i) const;
 	const double energy() const;
+	void export_labeling(const int width, const int height) const;
 	
 };

@@ -36,7 +36,7 @@ void rectify(Matrix& A) {
 
 // wasserstein gradient iteration limit
 // and convergence threshold
-const int ITERATION_LIMIT = 15;
+const int ITERATION_LIMIT = 35;
 const double CONVERGENCE_THRESH = 1e-6;
 const int FIRST_COMPONENT = 1;
 const int SECOND_COMPONENT = 2;
@@ -178,27 +178,34 @@ void iterate(
 
 int main( int argc, char **argv )
 {
-	if(argc < 2) {
-		std::cerr << "Usage: optimize <gzipped input file>" << std::endl;
+	if(argc < 4) {
+		std::cerr << "Usage: optimize <gzipped input file> <width> <height>" << std::endl;
 		return 0;
 	}
 
+	const int width = std::stoi(argv[2]);
+	const int height = std::stoi(argv[3]);
+
 	Graph g;
 	g.load_from_file(argv[1]);
+
+	assert( g.node_count == width*height );
 
 	// setup hyperparameters
 	const double tau   = 0.1;
 	const double alpha = 1.5;
 	const double h     = 0.1;
-	const int GLOBAL_ITERATION_LIMIT = 15;
+	const int GLOBAL_ITERATION_LIMIT = 12;
 
 	for (int i = 0; i < GLOBAL_ITERATION_LIMIT; ++i)
 	{
-		std::cout << g.energy() << std::endl;
 		iterate(g, tau, alpha, h);
+		std::cout << g.energy() << std::endl;
 	}
 
 	std::cout << "Final energy: " << g.energy() << std::endl;
+
+	g.export_labeling(width, height);
 
 	return 0;
 }

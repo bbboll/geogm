@@ -158,6 +158,20 @@ public:
 		}
 		return sum;
 	};
+
+	int argmax() const {
+		double max = 0.0;
+		int arg = 0;
+		for (int i = 0; i < m*n; ++i)
+		{
+			if (A[i] > max)
+			{
+				max = A[i];
+				arg = i;
+			}
+		}
+		return arg;
+	}
 };
 
 /*
