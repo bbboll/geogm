@@ -36,7 +36,7 @@ void matrix_psubdivide(const Matrix& A, Matrix& B) {
 
 /*
 	pointwise exponential
-	B ← exp(B)
+	A ← exp(A)
 */
 void matrix_pexp(Matrix &A) {
 	double *dataA = A.raw();
@@ -48,13 +48,38 @@ void matrix_pexp(Matrix &A) {
 
 /*
 	pointwise natural logarithm
-	B ← log(B)
+	A ← log(A)
 */
 void matrix_plog(Matrix &A) {
 	double *dataA = A.raw();
 	for (int i = 0; i < A.m*A.n; ++i)
 	{
 		dataA[i] = std::log(dataA[i]);
+	}
+}
+
+/*
+	pointwise power
+	A ← A**p
+*/
+void matrix_ppower(Matrix &A, const double p) {
+	double *dataA = A.raw();
+	for (int i = 0; i < A.m*A.n; ++i)
+	{
+		dataA[i] = std::pow(dataA[i], p);
+	}
+}
+
+/*
+	pointwise product
+	A ← A*B
+*/
+void matrix_pproduct(Matrix &A, const Matrix& B) {
+	double *dataA = A.raw();
+	double *dataB = B.raw();
+	for (int i = 0; i < A.m*A.n; ++i)
+	{
+		dataA[i] = dataA[i]*dataB[i];
 	}
 }
 
@@ -73,6 +98,23 @@ double matrix_mse(Matrix &A, Matrix &B) {
 		sum += (dataA[i] - dataB[i]) * (dataA[i] - dataB[i]);
 	}
 	return sum / (A.m*A.n);
+}
+
+/*
+	BLAS routine daxpy
+	x ← x + αy
+*/
+void matrix_add(Matrix &x, const double alpha, const Matrix&y) {
+	assert( x.m*x.n == y.m*y.n );
+
+	cblas_daxpy(
+		x.m*x.n,	// number of entries
+		alpha,      // multiplier alpha
+		y.raw(),	// other data
+		1,			// other stride
+		x.raw(),	// x data
+		1			// x stride
+	);
 }
 
 /*
@@ -175,3 +217,8 @@ double dot_product(const Matrix& A, const Matrix& B) {
 		1          // B stride
 	);
 }
+
+Matrix& Matrix::operator+=(const Matrix& other) {
+	matrix_add(*this, 1.0, other);
+	return *this;
+};

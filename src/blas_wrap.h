@@ -136,6 +136,8 @@ public:
 		return *this;
 	};
 
+	Matrix& operator+=(const Matrix& other);
+
 	void print() const {
 		std::cout << "Matrix " << first_dim() << "x" << second_dim() << std::endl;
 		for (int i = 0; i < first_dim(); ++i)
@@ -166,20 +168,38 @@ void matrix_psubdivide(const Matrix& A, Matrix& B);
 
 /*
 	pointwise exponential
-	B ← exp(B)
+	A ← exp(A)
 */
 void matrix_pexp(Matrix &A);
 
 /*
 	pointwise natural logarithm
-	B ← log(B)
+	A ← log(A)
 */
 void matrix_plog(Matrix &A);
+
+/*
+	pointwise power
+	A ← A**p
+*/
+void matrix_ppower(Matrix &A, const double p);
+
+/*
+	pointwise product
+	A ← A*B
+*/
+void matrix_pproduct(Matrix &A, const Matrix& B);
 
 /*
 	Mean squared error
 */
 double matrix_mse(Matrix &A, Matrix &B);
+
+/*
+	BLAS routine daxpy
+	y ← y + αx
+*/
+void matrix_add(Matrix &y, const double alpha, const Matrix&x);
 
 /*
 	BLAS routine copy
