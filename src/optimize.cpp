@@ -198,8 +198,6 @@ void iterate(
 	for (int i = 0; i < NUM_THREADS; ++i)
 	{
 		ids.push_back(std::vector<int>());
-		// Matrix energy_gradient(g.stride, 1);
-		// Matrix unary_label(g.stride, 1);
 		energy_gradients.push_back(new Matrix(g.stride, 1));
 		unary_labels.push_back(new Matrix(g.stride, 1));
 	}
