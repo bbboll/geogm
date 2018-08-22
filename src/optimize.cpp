@@ -2,6 +2,7 @@
 #include "graph.h"
 #include <assert.h>
 #include <iostream>
+#include <cmath>
 
 /*
 	Project a given vector onto the tangent space of the
@@ -176,6 +177,20 @@ void iterate(
 
 }
 
+double normalized_entropy(Graph& g) {
+	double entropy = 0.0;
+	for (int i = 0; i < g.node_count; ++i)
+	{
+		Matrix w = g.get_unary_labels(i);
+		double* dataW = w.raw();
+		for (int i = 0; i < w.m*w.n; ++i)
+		{
+			entropy += dataW[i]*std::log(dataW[i]);
+		}
+	}
+	return (- entropy / (g.node_count * std::log(g.stride)));
+}
+
 int main( int argc, char **argv )
 {
 	if(argc < 4) {
@@ -192,15 +207,23 @@ int main( int argc, char **argv )
 	assert( g.node_count == width*height );
 
 	// setup hyperparameters
-	const double tau   = 0.1;
-	const double alpha = 1.5;
+	const double tau   = 0.05;
+	const double alpha = 0.7;
 	const double h     = 0.1;
-	const int GLOBAL_ITERATION_LIMIT = 12;
+	const int GLOBAL_ITERATION_LIMIT = 30;
 
 	for (int i = 0; i < GLOBAL_ITERATION_LIMIT; ++i)
 	{
 		iterate(g, tau, alpha, h);
-		std::cout << g.energy() << std::endl;
+		std::cout << "\nIteration " << i << std::endl;
+		std::cout << "energy: " << g.energy() << std::endl;
+		double entropy = normalized_entropy(g);
+		std::cout << "entropy: " << entropy << std::endl;
+
+		if (entropy < 1e-2)
+		{
+			break;
+		}
 	}
 
 	std::cout << "Final energy: " << g.energy() << std::endl;
