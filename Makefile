@@ -20,6 +20,7 @@ optimize: src/optimize.cpp src/graph.cpp src/blas_wrap.h src/blas_wrap.cpp
 		   -std=$(STD) \
 		   -lboost_iostreams \
 		   -lboost_regex \
+		   -pthread \
 		   -o optimize src/blas_wrap.cpp src/graph.cpp src/optimize.cpp
 endif
 ifeq ($(UNAME_S),Darwin)
@@ -33,6 +34,7 @@ optimize: src/optimize.cpp src/graph.cpp src/blas_wrap.h src/blas_wrap.cpp
 		   -std=$(STD) \
 		   -lboost_iostreams \
 		   -lboost_regex \
+		   -pthread \
 		   -o optimize src/blas_wrap.cpp src/graph.cpp src/optimize.cpp
 endif
 
