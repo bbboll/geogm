@@ -137,7 +137,7 @@ void Graph::load_from_file(std::string path) {
 	assert( edge_endpoints.size() == edge_count );
 
 	// allocate memory for unary costs
-	unary_costs = (double*) malloc( stride*node_count * sizeof(double) );
+	unary_costs = new double[stride*node_count];
 	int unary_cost_index = 0;
 
 	// read unary costs
@@ -172,7 +172,7 @@ void Graph::load_from_file(std::string path) {
 	assert( unary_cost_index == stride*node_count );
 
 	// allocate memory for pairwise costs
-	pairwise_costs = (double*) malloc( stride*stride*edge_count * sizeof(double) );
+	pairwise_costs = new double[stride*stride*edge_count];
 	int pairwise_cost_index = 0;
 
 	// read pairwise costs
@@ -213,7 +213,7 @@ void Graph::load_from_file(std::string path) {
 	unary_costs_m.set_size(node_count*stride, 1);
 	pairwise_costs_m.set_data(pairwise_costs);
 	pairwise_costs_m.set_size(edge_count*stride*stride, 1);
-	unary_labels = (double*) malloc( node_count*stride * sizeof(double) );
+	unary_labels = new double[node_count*stride];
 	unary_labels_m.set_data(unary_labels);
 	unary_labels_m.set_size(node_count*stride, 1);
 

@@ -5,13 +5,13 @@
 #include <utility>
 #include <string>
 
-typedef std::pair<std::vector<int>,std::vector<int>> intvecpair;
+using intvecpair = std::pair<std::vector<int>,std::vector<int>>;
 
 class Graph
 {
-	double *unary_costs = NULL;
-	double *pairwise_costs = NULL;
-	double *unary_labels = NULL;
+	double *unary_costs = nullptr;
+	double *pairwise_costs = nullptr;
+	double *unary_labels = nullptr;
 	std::vector< intvecpair > adjacency;
 	Matrix unary_costs_m;
 	Matrix pairwise_costs_m;
@@ -24,14 +24,14 @@ public:
 
 	Graph() {};
 	~Graph() {
-		if (unary_costs != NULL) {
-			free(unary_costs);
+		if (unary_costs != nullptr) {
+			delete unary_costs;
 		}
-		if (pairwise_costs != NULL) {
-			free(pairwise_costs);
+		if (pairwise_costs != nullptr) {
+			delete pairwise_costs;
 		}
-		if (unary_labels != NULL) {
-			free(unary_labels);
+		if (unary_labels != nullptr) {
+			delete unary_labels;
 		}
 	};
 
