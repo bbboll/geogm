@@ -5,19 +5,17 @@
 #include <utility>
 #include <string>
 
-typedef std::pair<std::vector<int>,std::vector<int>> intvecpair;
+using intvecpair = std::pair<std::vector<int>,std::vector<int>>;
 
 class Graph
 {
-	double *unary_costs = NULL;
-	double *pairwise_costs = NULL;
-	double *unary_labels = NULL;
-	double *pairwise_labels = NULL;
+	double *unary_costs = nullptr;
+	double *pairwise_costs = nullptr;
+	double *unary_labels = nullptr;
 	std::vector< intvecpair > adjacency;
 	Matrix unary_costs_m;
 	Matrix pairwise_costs_m;
 	Matrix unary_labels_m;
-	Matrix pairwise_labels_m;
 
 public:
 
@@ -26,25 +24,21 @@ public:
 
 	Graph() {};
 	~Graph() {
-		if (unary_costs != NULL) {
-			free(unary_costs);
+		if (unary_costs != nullptr) {
+			delete unary_costs;
 		}
-		if (pairwise_costs != NULL) {
-			free(pairwise_costs);
+		if (pairwise_costs != nullptr) {
+			delete pairwise_costs;
 		}
-		if (unary_labels != NULL) {
-			free(unary_labels);
+		if (unary_labels != nullptr) {
+			delete unary_labels;
 		}
-		// if (pairwise_labels != NULL) {
-		// 	free(pairwise_labels);
-		// }
 	};
 
 	void load_from_file(std::string path);
 	const Matrix get_unary(const int i) const;
 	const Matrix get_pairwise(const int ij) const;
 	Matrix get_unary_labels(const int i) const;
-	// const Matrix get_pairwise_labels(const int ij) const;
 	const intvecpair adjacent_edges(const int i) const;
 	const double energy() const;
 	void export_labeling(const int width, const int height) const;

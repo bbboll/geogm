@@ -26,13 +26,14 @@ blastest: src/blastest.cpp src/blas_wrap.h src/blas_wrap.cpp
 		   -std=$(STD) \
 		   -o blastest src/blas_wrap.cpp src/blastest.cpp
 
-optimize: src/optimize.cpp src/graph.cpp src/blas_wrap.h src/blas_wrap.cpp
+optimize: src/optimize.cpp src/graph.cpp src/blas_wrap.h src/graph.h src/blas_wrap.cpp
 	$(CXX) -I$(BLAS_DIR)/include \
 		   -lopenblas \
 		   -lc \
 		   -std=$(STD) \
 		   -lboost_iostreams \
 		   -lboost_regex \
+		   -pthread \
 		   -o optimize src/blas_wrap.cpp src/graph.cpp src/optimize.cpp
 endif
 ifeq ($(UNAME_S),Darwin)
@@ -46,6 +47,7 @@ optimize: src/optimize.cpp src/graph.cpp src/blas_wrap.h src/blas_wrap.cpp
 		   -std=$(STD) \
 		   -lboost_iostreams \
 		   -lboost_regex \
+		   -pthread \
 		   -o optimize src/blas_wrap.cpp src/graph.cpp src/optimize.cpp
 endif
 endif

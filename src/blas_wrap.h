@@ -18,7 +18,7 @@ bool almost_equal(double a, double b);
 */
 class Matrix
 {
-	double *A = NULL;
+	double *A = nullptr;
 	bool needs_memory_cleanup = true;
 
 public:
@@ -34,7 +34,7 @@ public:
 
 	Matrix(const int _m, const int _n) : m(_m), n(_n) {
 		// allocate memory for entries
-		A = (double*) malloc( m*n * sizeof(double) );
+		A = new double[m*n];
 	};
 
 	Matrix(const int _m, const int _n, double *_A) : m(_m), n(_n) {
@@ -44,13 +44,13 @@ public:
 	};
 
 	~Matrix() {
-		if (needs_memory_cleanup && A != NULL) {
-			free(A);
+		if (needs_memory_cleanup && A != nullptr) {
+			delete A;
 		}
 	};
 
 	void set_data(double* data) {
-		assert( A == NULL );
+		assert( A == nullptr );
 		A = data;
 	};
 

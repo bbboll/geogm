@@ -137,7 +137,7 @@ void Graph::load_from_file(std::string path) {
 	assert( edge_endpoints.size() == edge_count );
 
 	// allocate memory for unary costs
-	unary_costs = (double*) malloc( stride*node_count * sizeof(double) );
+	unary_costs = new double[stride*node_count];
 	int unary_cost_index = 0;
 
 	// read unary costs
@@ -172,7 +172,7 @@ void Graph::load_from_file(std::string path) {
 	assert( unary_cost_index == stride*node_count );
 
 	// allocate memory for pairwise costs
-	pairwise_costs = (double*) malloc( stride*stride*edge_count * sizeof(double) );
+	pairwise_costs = new double[stride*stride*edge_count];
 	int pairwise_cost_index = 0;
 
 	// read pairwise costs
@@ -213,18 +213,13 @@ void Graph::load_from_file(std::string path) {
 	unary_costs_m.set_size(node_count*stride, 1);
 	pairwise_costs_m.set_data(pairwise_costs);
 	pairwise_costs_m.set_size(edge_count*stride*stride, 1);
-	unary_labels = (double*) malloc( node_count*stride * sizeof(double) );
-	//pairwise_labels = (double*) malloc( edge_count*stride*stride * sizeof(double) );
+	unary_labels = new double[node_count*stride];
 	unary_labels_m.set_data(unary_labels);
 	unary_labels_m.set_size(node_count*stride, 1);
-	//pairwise_labels_m.set_data(pairwise_labels);
-	//pairwise_labels_m.set_size(edge_count*stride*stride, 1);
 
 	// init label vectors
 	unary_labels_m.one_fill();
-	// pairwise_labels_m.one_fill();
 	unary_labels_m *= (double) 1/stride;
-	// pairwise_labels_m *= 1/stride;
 }
 
 const Matrix Graph::get_unary(const int i) const {
@@ -239,16 +234,12 @@ Matrix Graph::get_unary_labels(const int i) const {
 	return Matrix(stride, 1, unary_labels + i*stride );	
 }
 
-// const Matrix Graph::get_pairwise_labels(const int ij) const {
-// 	// TODO
-// }
-
 const intvecpair Graph::adjacent_edges(const int i) const {
 	return adjacency.at(i);
 }
 
 const double Graph::energy() const {
-	return dot_product(unary_costs_m, unary_labels_m); // + dot_product(pairwise_costs_m, pairwise_labels_m);
+	return dot_product(unary_costs_m, unary_labels_m);
 }
 
 void Graph::export_labeling(const int width, const int height) const {

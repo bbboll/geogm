@@ -2,6 +2,8 @@
 #include "graph.h"
 #include <assert.h>
 #include <iostream>
+#include <cmath>
+#include <thread>
 
 /*
 	Project a given vector onto the tangent space of the
@@ -38,6 +40,7 @@ void rectify(Matrix& A) {
 // and convergence threshold
 const int ITERATION_LIMIT = 35;
 const double CONVERGENCE_THRESH = 1e-6;
+
 const int FIRST_COMPONENT = 1;
 const int SECOND_COMPONENT = 2;
 
@@ -145,19 +148,17 @@ void energy_gradient_row(
 	}
 }
 
-/*
-	6.1
-*/
-void iterate(
+unsigned int NUM_THREADS = std::thread::hardware_concurrency();
+
+void iterate_node(
+		const std::vector<int>& node_ids,
 		const Graph& g, 
 		const double tau, 
 		const double alpha, 
-		const double h) {
-	// setup iteration variable memory
-	Matrix energy_gradient(g.stride, 1);
-	Matrix unary_labels(g.stride, 1);
-
-	for (int i = 0; i < g.node_count; ++i)
+		const double h,
+		Matrix& energy_gradient,
+		Matrix& unary_labels) {
+	for (auto const& i: node_ids)
 	{
 		energy_gradient_row(g, i, tau, energy_gradient);
 		energy_gradient *= (-h);
@@ -173,7 +174,75 @@ void iterate(
 		Matrix update_labels = g.get_unary_labels(i);
 		matrix_copy(unary_labels, update_labels);
 	}
+}
 
+/*
+	6.1
+*/
+void iterate(
+		const Graph& g, 
+		const double tau, 
+		const double alpha, 
+		const double h) {
+	// check if able to detect number of cores
+	if (NUM_THREADS == 0)
+	{
+		NUM_THREADS = 1;
+	}
+	// setup id containers
+	std::vector<std::vector<int>> ids;
+
+	// setup iteration variable memory
+	std::vector<Matrix*> energy_gradients;
+	std::vector<Matrix*> unary_labels;
+	for (int i = 0; i < NUM_THREADS; ++i)
+	{
+		ids.push_back(std::vector<int>());
+		energy_gradients.push_back(new Matrix(g.stride, 1));
+		unary_labels.push_back(new Matrix(g.stride, 1));
+	}
+
+	// distribute work
+	int thread_id = 0;
+	for (int i = 0; i < g.node_count; ++i)
+	{
+		ids.at(thread_id++).push_back(i);
+		thread_id = thread_id % NUM_THREADS;
+	}
+
+	// setup and start worker threads
+	std::thread threads[NUM_THREADS];
+	for (int i = 0; i < NUM_THREADS; ++i)
+	{
+		threads[i] = std::thread(
+			iterate_node,
+			std::ref(ids.at(i)),
+			std::ref(g), 
+			tau, 
+			alpha, 
+			h,
+			std::ref(*energy_gradients.at(i)),
+			std::ref(*unary_labels.at(i))
+		);
+	}
+	for (int i = 0; i < NUM_THREADS; ++i)
+	{
+		threads[i].join();
+	}
+}
+
+double normalized_entropy(Graph& g) {
+	double entropy = 0.0;
+	for (int i = 0; i < g.node_count; ++i)
+	{
+		Matrix w = g.get_unary_labels(i);
+		double* dataW = w.raw();
+		for (int i = 0; i < w.m*w.n; ++i)
+		{
+			entropy += dataW[i]*std::log(dataW[i]);
+		}
+	}
+	return (- entropy / (g.node_count * std::log(g.stride)));
 }
 
 int main( int argc, char **argv )
@@ -192,15 +261,23 @@ int main( int argc, char **argv )
 	assert( g.node_count == width*height );
 
 	// setup hyperparameters
-	const double tau   = 0.1;
-	const double alpha = 1.5;
+	const double tau   = 0.05;
+	const double alpha = 0.7;
 	const double h     = 0.1;
-	const int GLOBAL_ITERATION_LIMIT = 12;
+	const int GLOBAL_ITERATION_LIMIT = 30;
 
 	for (int i = 0; i < GLOBAL_ITERATION_LIMIT; ++i)
 	{
 		iterate(g, tau, alpha, h);
-		std::cout << g.energy() << std::endl;
+		std::cout << "\nIteration " << i << std::endl;
+		std::cout << "energy: " << g.energy() << std::endl;
+		double entropy = normalized_entropy(g);
+		std::cout << "entropy: " << entropy << std::endl;
+
+		if (entropy < 1e-2)
+		{
+			break;
+		}
 	}
 
 	std::cout << "Final energy: " << g.energy() << std::endl;
