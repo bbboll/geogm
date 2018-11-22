@@ -96,7 +96,14 @@ void wasserstein_gradient(
 		}
 
 		if ( matrix_mse(v_current, gradient_component) < CONVERGENCE_THRESH ) {
+			// if (i>0) {
+			// 	std::cout << i << " Sinkhorn iterations" << std::endl;
+			// }
 			break;
+		}
+		else {
+			// update current Sinkhorn iterate
+			matrix_copy(gradient_component, v_current);
 		}
 	}
 
@@ -261,7 +268,7 @@ int main( int argc, char **argv )
 	assert( g.node_count == width*height );
 
 	// setup hyperparameters
-	const double tau   = 0.05;
+	const double tau   = 0.2;
 	const double alpha = 0.7;
 	const double h     = 0.1;
 	const int GLOBAL_ITERATION_LIMIT = 30;
@@ -272,6 +279,10 @@ int main( int argc, char **argv )
 		std::cout << "\nIteration " << i << std::endl;
 		std::cout << "energy: " << g.energy() << std::endl;
 		double entropy = normalized_entropy(g);
+		if (std::isnan(entropy)) {
+			std::cout << "Failed! (entropy = NaN)" << std::endl;
+			break;
+		}
 		std::cout << "entropy: " << entropy << std::endl;
 
 		if (entropy < 1e-2)
