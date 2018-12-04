@@ -124,7 +124,7 @@ void energy_gradient_row(
 		const double tau, 
 		Matrix& energy_gradient) {
 	std::vector<int> outbound = g.adjacent_edges(i).second;
-	std::vector<int> inbound = g.adjacent_edges(i).second;
+	std::vector<int> inbound = g.adjacent_edges(i).first;
 
 	matrix_copy(g.get_unary(i), energy_gradient);
 	project_T(energy_gradient);
